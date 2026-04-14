@@ -1,0 +1,186 @@
+"use client";
+
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useReducer,
+} from "react";
+import type { Product } from "@/lib/data";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  size: string | null;
+}
+
+interface CartState {
+  isOpen: boolean;
+  items: CartItem[];
+}
+
+type CartAction =
+  | { type: "ADD_ITEM"; product: Product; size: string | null }
+  | { type: "REMOVE_ITEM"; productId: string; size: string | null }
+  | {
+      type: "UPDATE_QTY";
+      productId: string;
+      size: string | null;
+      quantity: number;
+    }
+  | { type: "CLEAR_CART" }
+  | { type: "OPEN_CART" }
+  | { type: "CLOSE_CART" }
+  | { type: "TOGGLE_CART" };
+
+// ─── Reducer ──────────────────────────────────────────────────────────────────
+
+function cartReducer(state: CartState, action: CartAction): CartState {
+  switch (action.type) {
+    case "ADD_ITEM": {
+      const key = `${action.product.id}-${action.size}`;
+      const existing = state.items.find(
+        (i) => `${i.product.id}-${i.size}` === key
+      );
+      if (existing) {
+        return {
+          ...state,
+          isOpen: true,
+          items: state.items.map((i) =>
+            `${i.product.id}-${i.size}` === key
+              ? { ...i, quantity: i.quantity + 1 }
+              : i
+          ),
+        };
+      }
+      return {
+        ...state,
+        isOpen: true,
+        items: [
+          ...state.items,
+          { product: action.product, quantity: 1, size: action.size },
+        ],
+      };
+    }
+    case "REMOVE_ITEM": {
+      const key = `${action.productId}-${action.size}`;
+      return {
+        ...state,
+        items: state.items.filter((i) => `${i.product.id}-${i.size}` !== key),
+      };
+    }
+    case "UPDATE_QTY": {
+      const key = `${action.productId}-${action.size}`;
+      if (action.quantity <= 0) {
+        return {
+          ...state,
+          items: state.items.filter((i) => `${i.product.id}-${i.size}` !== key),
+        };
+      }
+      return {
+        ...state,
+        items: state.items.map((i) =>
+          `${i.product.id}-${i.size}` === key
+            ? { ...i, quantity: action.quantity }
+            : i
+        ),
+      };
+    }
+    case "CLEAR_CART":
+      return { ...state, items: [] };
+    case "OPEN_CART":
+      return { ...state, isOpen: true };
+    case "CLOSE_CART":
+      return { ...state, isOpen: false };
+    case "TOGGLE_CART":
+      return { ...state, isOpen: !state.isOpen };
+    default:
+      return state;
+  }
+}
+
+// ─── Context ──────────────────────────────────────────────────────────────────
+
+interface CartContextValue {
+  addItem: (product: Product, size?: string | null) => void;
+  clearCart: () => void;
+  closeCart: () => void;
+  isOpen: boolean;
+  itemCount: number;
+  items: CartItem[];
+  openCart: () => void;
+  removeItem: (productId: string, size?: string | null) => void;
+  subtotal: number;
+  toggleCart: () => void;
+  updateQty: (productId: string, size: string | null, quantity: number) => void;
+}
+
+const CartContext = createContext<CartContextValue | null>(null);
+
+// ─── Provider ─────────────────────────────────────────────────────────────────
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(cartReducer, {
+    items: [],
+    isOpen: false,
+  });
+
+  const itemCount = state.items.reduce((sum, i) => sum + i.quantity, 0);
+  const subtotal = state.items.reduce(
+    (sum, i) => sum + i.product.price * i.quantity,
+    0
+  );
+
+  const addItem = useCallback(
+    (product: Product, size: string | null = null) =>
+      dispatch({ type: "ADD_ITEM", product, size }),
+    []
+  );
+  const removeItem = useCallback(
+    (productId: string, size: string | null = null) =>
+      dispatch({ type: "REMOVE_ITEM", productId, size }),
+    []
+  );
+  const updateQty = useCallback(
+    (productId: string, size: string | null, quantity: number) =>
+      dispatch({ type: "UPDATE_QTY", productId, size, quantity }),
+    []
+  );
+  const clearCart = useCallback(() => dispatch({ type: "CLEAR_CART" }), []);
+  const openCart = useCallback(() => dispatch({ type: "OPEN_CART" }), []);
+  const closeCart = useCallback(() => dispatch({ type: "CLOSE_CART" }), []);
+  const toggleCart = useCallback(() => dispatch({ type: "TOGGLE_CART" }), []);
+
+  return (
+    <CartContext.Provider
+      value={{
+        items: state.items,
+        isOpen: state.isOpen,
+        itemCount,
+        subtotal,
+        addItem,
+        removeItem,
+        updateQty,
+        clearCart,
+        openCart,
+        closeCart,
+        toggleCart,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useCart() {
+  const ctx = useContext(CartContext);
+  if (!ctx) {
+    throw new Error("useCart must be used inside <CartProvider>");
+  }
+  return ctx;
+}

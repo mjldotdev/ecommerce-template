@@ -1,0 +1,197 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "lenis/dist/lenis.css";
+
+/* ─── Google Fonts ───────────────────────── */
+/* @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"); */
+
+/* ─── Dark Variant (Tailwind v4) ─────────── */
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Theme Layer ───────────────────────── */
+@theme inline {
+  /* Typography */
+  --font-display: "Cormorant Garamond", serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-heading: var(--font-display);
+
+  /* Spacing */
+  --spacing-18: 4.5rem;
+  --spacing-22: 5.5rem;
+  --spacing-88: 22rem;
+  --spacing-128: 32rem;
+
+  /* Breakpoints */
+  --breakpoint-xs: 480px;
+  --breakpoint-3xl: 1920px;
+
+  /* Core semantic tokens */
+  --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-accent: var(--accent);
+  --color-accent-warm: var(--accent-warm);
+  --color-surface: var(--surface);
+  --color-border: var(--border-color);
+
+  /* shadcn mapping */
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--ink);
+  --color-primary-foreground: var(--canvas);
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--surface);
+  --color-muted-foreground: var(--ink-muted);
+  --color-accent-foreground: var(--canvas);
+  --color-input: var(--border-color);
+  --color-ring: var(--accent);
+
+  /* Radius */
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+
+  /* Easing */
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-silk: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ─── Design Tokens ─────────────────────── */
+:root {
+  --canvas: #f8f5f0;
+  --ink: #0c0b09;
+  --ink-muted: #6b6760;
+  --accent: #b89a6a;
+  --accent-warm: #c8a97e;
+  --surface: #edeae4;
+  --border-color: #d8d3cc;
+
+  color-scheme: light;
+}
+
+.dark {
+  --canvas: #080806;
+  --ink: #ede8df;
+  --ink-muted: #7a7870;
+  --accent: #c4a882;
+  --accent-warm: #d4b892;
+  --surface: #121210;
+  --border-color: #2a2925;
+
+  color-scheme: dark;
+}
+
+/* ─── Base Reset ───────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    overflow-x: hidden;
+    @apply bg-background text-foreground font-sans;
+  }
+
+  ::selection {
+    color: var(--canvas);
+    background: var(--accent);
+  }
+}
+
+/* ─── Typography ───────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.text-display-2xl {
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 12vw, 14rem);
+  font-weight: 300;
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+}
+
+.text-display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 9vw, 10rem);
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+}
+
+.text-display-lg {
+  font-size: clamp(2.5rem, 6vw, 7rem);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+}
+
+.text-display-md {
+  font-size: clamp(1.75rem, 4vw, 4.5rem);
+  line-height: 1;
+}
+
+.text-eyebrow {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+/* ─── Effects ─────────────────────────── */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  content: "";
+  background: currentColor;
+  transition: width 0.4s var(--ease-expo);
+}
+.link-underline:hover::after {
+  width: 100%;
+}
+
+.magnetic {
+  display: inline-block;
+  transition: transform 0.4s var(--ease-expo);
+}
+
+/* ─── Grain ───────────────────────────── */
+.grain::after {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background-image: url("data:image/svg+xml,...");
+  opacity: 0.025;
+}
+
+/* ─── Animations ─────────────────────── */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Lenis Fix ───────────────────────── */
+html.lenis {
+  height: auto;
+}
