@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import WishlistButton from "@/components/ecommerce/wishlist-button";
 import type { Product } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -70,6 +71,11 @@ export default function ProductCard({
             src={product.hoverImage}
           />
         )}
+
+        {/* Wishlist button */}
+        <div className="absolute top-3 right-3 z-10">
+          <WishlistButton product={product} />
+        </div>
 
         {/* Tag badge */}
         {product.tag && (

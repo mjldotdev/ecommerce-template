@@ -4,6 +4,7 @@ import CartDrawer from "@/components/ecommerce/cart-drawer";
 import ScrollProvider from "@/components/providers/scroll-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { CartProvider } from "@/lib/cart-context";
+import { WishlistProvider } from "@/lib/wishlist-context";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -49,14 +50,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className="grain">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           disableTransitionOnChange
           enableSystem
         >
-          <CartProvider>
-            <ScrollProvider>{children}</ScrollProvider>
-            <CartDrawer />
-          </CartProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <ScrollProvider>{children}</ScrollProvider>
+              <CartDrawer />
+            </CartProvider>
+          </WishlistProvider>
         </ThemeProvider>
       </body>
     </html>

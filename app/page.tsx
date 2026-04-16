@@ -20,8 +20,8 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      <CustomCursor />
       <ScrollProgressBar />
+      <CustomCursor />
       {/* <AnnouncementBar /> */}
       <Navbar />
 

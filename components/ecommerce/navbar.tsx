@@ -2,12 +2,13 @@
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Menu, Moon, ShoppingBag, Sun, X } from "lucide-react";
+import { Heart, Menu, Moon, Search, ShoppingBag, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { useWishlist } from "@/lib/wishlist-context";
 
 gsap.registerPlugin();
 
@@ -25,6 +26,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { itemCount, toggleCart } = useCart();
+  const { count: wishlistCount } = useWishlist();
 
   useEffect(() => {
     setMounted(true);
@@ -61,7 +63,7 @@ export default function Navbar() {
         <div className="mx-auto flex items-center justify-between px-6 md:px-12">
           {/* Logo */}
           <Link
-            className="font-display font-medium text-[1.35rem] text-[var(--text)] tracking-tight transition-colors duration-300 hover:text-[var(--accent)]"
+            className="mr-24 font-display font-medium text-[1.35rem] text-[var(--ink)] tracking-tight transition-colors duration-300 hover:text-[var(--accent)]"
             href="/"
           >
             <em>M.</em>
@@ -105,6 +107,29 @@ export default function Navbar() {
                 )}
               </button>
             )}
+
+            {/* Search */}
+            <Link
+              aria-label="Search"
+              className="p-2 text-[var(--ink-muted)] transition-colors duration-300 hover:text-[var(--ink)]"
+              href="/search"
+            >
+              <Search size={16} strokeWidth={1.5} />
+            </Link>
+
+            {/* Wishlist */}
+            <Link
+              aria-label={`Wishlist, ${wishlistCount} items`}
+              className="relative p-2 text-[var(--ink-muted)] transition-colors duration-300 hover:text-[var(--ink)]"
+              href="/wishlist"
+            >
+              <Heart size={16} strokeWidth={1.5} />
+              {wishlistCount > 0 && (
+                <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[var(--accent)] font-medium text-[0.45rem] text-[var(--canvas)]">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {/* Cart */}
             <button
