@@ -2,7 +2,7 @@
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { ArrowLeft, Minus, Plus } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,6 +10,7 @@ import { use, useRef, useState } from "react";
 import Footer from "@/components/ecommerce/footer";
 import Navbar from "@/components/ecommerce/navbar";
 import ProductCard from "@/components/ecommerce/product-card";
+import { useCart } from "@/lib/cart-context";
 import { products } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +28,6 @@ interface ProductPageProps {
 
 export default function ProductPage({ params }: ProductPageProps) {
   const { slug } = use(params);
-
   const product = products.find((p) => p.slug === slug);
   if (!product) {
     notFound();
@@ -38,6 +38,8 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const [added, setAdded] = useState(false);
+  const [sizeError, setSizeError] = useState(false);
+  const { addItem } = useCart();
 
   const images = [
     product.image,
@@ -82,8 +84,29 @@ export default function ProductPage({ params }: ProductPageProps) {
   );
 
   const handleAdd = () => {
+    // Shake the size selector if no size chosen for clothing
+    if (sizes.length > 0 && !activeSize) {
+      setSizeError(true);
+      gsap.to(".size-selector", {
+        x: [-6, 6, -5, 5, -3, 3, 0],
+        duration: 0.45,
+        ease: "power2.out",
+        onComplete: () => setSizeError(false),
+      });
+      return;
+    }
+
+    // Add `qty` copies (addItem increments by 1 each call)
+    for (let i = 0; i < qty; i++) {
+      addItem(product, activeSize);
+    }
+
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    // Brief button feedback, then reset
+    setTimeout(() => {
+      setAdded(false);
+      setQty(1);
+    }, 2200);
   };
 
   return (
@@ -196,8 +219,13 @@ export default function ProductPage({ params }: ProductPageProps) {
             {/* Size selector */}
             <div>
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-[0.6rem] text-[var(--ink)] text-eyebrow">
-                  Select Size
+                <span
+                  className={cn(
+                    "text-[0.6rem] text-eyebrow transition-colors duration-200",
+                    sizeError ? "text-red-500" : "text-[var(--ink)]"
+                  )}
+                >
+                  {sizeError ? "Please select a size" : "Select Size"}
                 </span>
                 <button
                   className="link-underline text-[0.6rem] text-[var(--ink-muted)] text-eyebrow"
@@ -206,7 +234,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                   Size Guide
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex size-selector flex-wrap gap-2">
                 {sizes.map((size) => (
                   <button
                     className={cn(
@@ -251,7 +279,7 @@ export default function ProductPage({ params }: ProductPageProps) {
               {/* Add to cart */}
               <button
                 className={cn(
-                  "flex-1 py-3 text-[0.65rem] text-eyebrow transition-all duration-500",
+                  "flex flex-1 items-center justify-center gap-2 py-3 text-[0.65rem] text-eyebrow transition-all duration-500",
                   added
                     ? "bg-[var(--accent)] text-[var(--canvas)]"
                     : "bg-[var(--ink)] text-[var(--canvas)] hover:bg-[var(--accent)]"
@@ -259,14 +287,24 @@ export default function ProductPage({ params }: ProductPageProps) {
                 onClick={handleAdd}
                 type="button"
               >
-                {added ? "Added to Bag ✓" : "Add to Bag"}
+                {added ? (
+                  <>
+                    <span>Added to Bag</span>
+                    <span>✓</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag size={13} strokeWidth={1.5} />
+                    <span>Add to Bag</span>
+                  </>
+                )}
               </button>
             </div>
 
             {/* Description */}
             <p className="text-[var(--ink-muted)] text-sm leading-relaxed">
-              A singular object in the M.dev collection — made by hand, built to
-              age beautifully. Each piece varies slightly in texture and
+              A singular object in the MAISON collection — made by hand, built
+              to age beautifully. Each piece varies slightly in texture and
               character, bearing the marks of its making. That is not
               imperfection. That is authenticity.
             </p>
