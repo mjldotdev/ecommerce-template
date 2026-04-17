@@ -5,9 +5,12 @@ import {
   type ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useReducer,
 } from "react";
 import type { Product } from "@/lib/data";
+
+const STORAGE_KEY = "maison_cart";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -127,6 +130,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
     items: [],
     isOpen: false,
   });
+
+  // ── Hydrate from localStorage on first mount ──────────────────────────────
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed: CartItem[] = JSON.parse(stored);
+        // Re-dispatch each stored item so the reducer handles deduplication correctly
+        for (const item of parsed) {
+          for (let i = 0; i < item.quantity; i++) {
+            dispatch({
+              type: "ADD_ITEM",
+              product: item.product,
+              size: item.size,
+            });
+          }
+        }
+      }
+    } catch {
+      // Ignore malformed storage
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount only
+
+  // ── Persist items to localStorage on every change ────────────────────────
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    } catch {
+      // Storage quota exceeded or unavailable — fail silently
+    }
+  }, [state.items]);
 
   const itemCount = state.items.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = state.items.reduce(

@@ -239,16 +239,17 @@ export default function CartDrawer() {
             )}
 
             {/* CTA */}
-            <a
+            <Link
               className="group flex w-full items-center justify-center gap-3 bg-[var(--ink)] py-4 text-[var(--canvas)] text-eyebrow transition-colors duration-500 hover:bg-[var(--accent)]"
               href="/checkout"
+              onClick={closeCart}
             >
               Proceed to Checkout
               <ArrowRight
                 className="transition-transform duration-300 group-hover:translate-x-1"
                 size={13}
               />
-            </a>
+            </Link>
 
             <p className="text-center text-[0.6rem] text-[var(--ink-muted)]">
               Taxes calculated at checkout
